@@ -7,12 +7,35 @@
     <title>Chicken Counter</title>
     <link rel="manifest" href="/manifest.json">
     <style>
-        body { font-family: -apple-system, sans-serif; background: #FFF8E7; padding: 20px; text-align: center; }
+        body { 
+            font-family: -apple-system, sans-serif; 
+            background: #FFF8E7; 
+            padding: 20px; 
+            text-align: center;
+            /* Prevents pull-to-refresh rubber banding */
+            overscroll-behavior-y: none; 
+        }
         .card { padding: 20px; margin-bottom: 15px; border-radius: 15px; color: white; }
         .c5 { background: #075056; } .c4 { background: #FF5B04; }
         .c3 { background: #233038; } .c2 { background: #F4D47C; color: black; }
         .row { display: flex; justify-content: center; gap: 15px; align-items: center; margin: 10px 0; }
-        button { width: 45px; height: 45px; border-radius: 50%; border: none; font-size: 20px; cursor: pointer; }
+        
+        /* THE FIX IS HERE */
+        button { 
+            width: 45px; 
+            height: 45px; 
+            border-radius: 50%; 
+            border: none; 
+            font-size: 20px; 
+            cursor: pointer;
+            
+            /* Disable Zoom & Selection */
+            touch-action: manipulation; 
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent; /* Removes grey box on tap */
+        }
+
         .count { font-size: 35px; font-weight: bold; min-width: 40px; }
         .save-btn { background: #27ae60; color: white; padding: 15px; width: 100%; font-size: 18px; border-radius: 10px; margin-top: 20px; }
         #history { margin-top: 30px; text-align: left; }
