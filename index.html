@@ -8,38 +8,117 @@
     <link rel="manifest" href="/manifest.json">
     <style>
         body { 
-            font-family: -apple-system, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background: #FFF8E7; 
             padding: 20px; 
             text-align: center;
-            /* Prevents pull-to-refresh rubber banding */
+            color: #333;
             overscroll-behavior-y: none; 
         }
-        .card { padding: 20px; margin-bottom: 15px; border-radius: 15px; color: white; }
-        .c5 { background: #075056; } .c4 { background: #FF5B04; }
-        .c3 { background: #233038; } .c2 { background: #F4D47C; color: black; }
-        .row { display: flex; justify-content: center; gap: 15px; align-items: center; margin: 10px 0; }
-        
-        /* THE FIX IS HERE */
-        button { 
-            width: 45px; 
-            height: 45px; 
+
+        h1 { margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px; }
+
+        /* --- Card Styles --- */
+        .card { 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            border-radius: 16px; 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .c5 { background: #075056; } 
+        .c4 { background: #FF5B04; }
+        .c3 { background: #233038; } 
+        .c2 { background: #F4D47C; color: #333; }
+
+        .row { display: flex; justify-content: center; gap: 15px; align-items: center; margin: 15px 0; }
+
+        /* --- Button Fix (No Zoom) --- */
+        button.counter-btn { 
+            width: 50px; 
+            height: 50px; 
             border-radius: 50%; 
             border: none; 
-            font-size: 20px; 
+            font-size: 24px; 
             cursor: pointer;
-            
-            /* Disable Zoom & Selection */
-            touch-action: manipulation; 
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            touch-action: manipulation; /* Fixes zoom issue */
             -webkit-user-select: none;
             user-select: none;
-            -webkit-tap-highlight-color: transparent; /* Removes grey box on tap */
         }
+        button.counter-btn:active { transform: scale(0.95); }
 
-        .count { font-size: 35px; font-weight: bold; min-width: 40px; }
-        .save-btn { background: #27ae60; color: white; padding: 15px; width: 100%; font-size: 18px; border-radius: 10px; margin-top: 20px; }
-        #history { margin-top: 30px; text-align: left; }
-        .hist-item { background: white; padding: 10px; margin-bottom: 5px; border-radius: 8px; font-size: 14px; }
+        .count { font-size: 40px; font-weight: 800; min-width: 50px; }
+
+        /* --- Total & Save Section --- */
+        .save-section {
+            background: white; 
+            padding: 25px; 
+            border-radius: 20px; 
+            margin-top: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .save-btn { 
+            background: #27ae60; 
+            color: white; 
+            padding: 16px; 
+            width: 100%; 
+            font-size: 18px; 
+            font-weight: bold; 
+            border: none;
+            border-radius: 12px; 
+            margin-top: 15px; 
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .save-btn:disabled { opacity: 0.7; }
+
+        /* --- NEW History Styles --- */
+        #history { 
+            margin-top: 40px; 
+            text-align: left; 
+            max-width: 500px; 
+            margin-left: auto; 
+            margin-right: auto;
+        }
+        #history h3 { font-size: 20px; margin-bottom: 15px; padding-left: 5px; opacity: 0.8; }
+        
+        .hist-item { 
+            background: white; 
+            padding: 16px; 
+            margin-bottom: 12px; 
+            border-radius: 16px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .hist-left { display: flex; flex-direction: column; gap: 5px; }
+        
+        .hist-date { 
+            font-size: 12px; 
+            color: #95a5a6; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+        
+        .hist-details { font-size: 13px; color: #555; font-weight: 500; }
+        .tag { padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 4px; color: white; opacity: 0.9; }
+
+        .hist-total { 
+            font-size: 22px; 
+            font-weight: 800; 
+            color: #E64A19; 
+            background: #FFF3E0;
+            padding: 10px 15px;
+            border-radius: 12px;
+            min-width: 40px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -47,13 +126,19 @@
 
     <div id="app"></div>
     
-    <div style="background: white; padding: 20px; border-radius: 15px; margin-top: 20px;">
-        <h2>Total: <span id="grand-total" style="color:#E64A19">0</span></h2>
+    <div class="save-section">
+        <h2 style="margin:0; font-size:18px; color:#7f8c8d; text-transform:uppercase;">Total Chickens</h2>
+        <div style="font-size: 60px; font-weight:800; color:#E64A19; margin: 10px 0;" id="grand-total">0</div>
         <button class="save-btn" onclick="saveData()">Save Record</button>
-        <div id="status" style="margin-top:10px; color: gray;"></div>
+        <div id="status" style="margin-top:10px; color: gray; font-size: 14px; min-height: 20px;"></div>
     </div>
 
-    <div id="history"><h3>History</h3><div id="list">Loading...</div></div>
+    <div id="history">
+        <h3>Recent Records</h3>
+        <div id="list">
+            <div style="text-align:center; color:#999; padding:20px;">Loading history...</div>
+        </div>
+    </div>
 
     <script>
         const types = [5, 4, 3, 2];
@@ -64,13 +149,13 @@
         types.forEach(t => {
             app.innerHTML += `
             <div class="card c${t}">
-                <h3>${t} Chickens/Cage</h3>
+                <div style="font-weight:bold; opacity:0.9">${t} Chickens/Cage</div>
                 <div class="row">
-                    <button onclick="mod(${t}, -1)">-</button>
+                    <button class="counter-btn" onclick="mod(${t}, -1)">−</button>
                     <span class="count" id="c-${t}">0</span>
-                    <button onclick="mod(${t}, 1)">+</button>
+                    <button class="counter-btn" onclick="mod(${t}, 1)">+</button>
                 </div>
-                <div>= <span id="t-${t}">0</span> chickens</div>
+                <div style="font-size:14px; opacity:0.8">= <span id="t-${t}">0</span> chickens</div>
             </div>`;
         });
 
@@ -96,9 +181,10 @@
             const btn = document.querySelector('.save-btn');
             const status = document.getElementById('status');
             const total = update();
-            if(total === 0) return alert("Total is 0");
+            if(total === 0) return alert("Total is 0. Count some chickens first!");
 
-            btn.disabled = true; status.innerText = "Saving...";
+            btn.disabled = true; 
+            btn.innerText = "Saving...";
             
             try {
                 const res = await fetch('/.netlify/functions/server', {
@@ -106,25 +192,52 @@
                     body: JSON.stringify({ ...counts, total })
                 });
                 if(res.ok) {
-                    status.innerText = "Saved!";
-                    counts = { 5: 0, 4: 0, 3: 0, 2: 0 };
+                    status.innerText = "Successfully saved!";
+                    setTimeout(() => status.innerText = "", 3000); // Clear message
+                    counts = { 5: 0, 4: 0, 3: 0, 2: 0 }; // Reset
                     update();
                     loadHistory();
                 } else {
-                    status.innerText = "Error saving.";
+                    status.innerText = "Error saving data.";
                 }
-            } catch(e) { status.innerText = "Connection error"; }
+            } catch(e) { status.innerText = "Network connection failed."; }
+            
             btn.disabled = false;
+            btn.innerText = "Save Record";
         }
 
         async function loadHistory() {
             try {
                 const res = await fetch('/.netlify/functions/server');
                 const data = await res.json();
-                document.getElementById('list').innerHTML = data.map(i => 
-                    `<div class="hist-item"><b>${i.total} 🐔</b> - ${new Date(i.created_at).toLocaleString()}</div>`
-                ).join('');
-            } catch(e) { document.getElementById('list').innerText = "Login/Network Error"; }
+                
+                if(data.length === 0) {
+                    document.getElementById('list').innerHTML = '<div style="text-align:center; color:#ccc;">No records yet</div>';
+                    return;
+                }
+
+                document.getElementById('list').innerHTML = data.map(i => {
+                    const date = new Date(i.created_at);
+                    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+                    return `
+                    <div class="hist-item">
+                        <div class="hist-left">
+                            <div class="hist-date">${dateStr} • ${timeStr}</div>
+                            <div class="hist-details">
+                                <span class="tag" style="background:#075056">5x${i.count_5}</span>
+                                <span class="tag" style="background:#FF5B04">4x${i.count_4}</span>
+                                <span class="tag" style="background:#233038">3x${i.count_3}</span>
+                                <span class="tag" style="background:#F4D47C; color:#333">2x${i.count_2}</span>
+                            </div>
+                        </div>
+                        <div class="hist-total">${i.total}</div>
+                    </div>`;
+                }).join('');
+            } catch(e) { 
+                document.getElementById('list').innerHTML = '<div style="color:red; text-align:center">Failed to load history</div>';
+            }
         }
         
         loadHistory();
