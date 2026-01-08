@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Chicken Counter</title>
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #FFF8E7; padding: 20px; text-align: center; }
+        .card { padding: 20px; margin-bottom: 15px; border-radius: 15px; color: white; }
+        .c5 { background: #075056; } .c4 { background: #FF5B04; }
+        .c3 { background: #233038; } .c2 { background: #F4D47C; color: black; }
+        .row { display: flex; justify-content: center; gap: 15px; align-items: center; margin: 10px 0; }
+        button { width: 45px; height: 45px; border-radius: 50%; border: none; font-size: 20px; cursor: pointer; }
+        .count { font-size: 35px; font-weight: bold; min-width: 40px; }
+        .save-btn { background: #27ae60; color: white; padding: 15px; width: 100%; font-size: 18px; border-radius: 10px; margin-top: 20px; }
+        #history { margin-top: 30px; text-align: left; }
+        .hist-item { background: white; padding: 10px; margin-bottom: 5px; border-radius: 8px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <h1>🐔 Chicken Counter</h1>
+
+    <div id="app"></div>
+    
+    <div style="background: white; padding: 20px; border-radius: 15px; margin-top: 20px;">
+        <h2>Total: <span id="grand-total" style="color:#E64A19">0</span></h2>
+        <button class="save-btn" onclick="saveData()">Save Record</button>
+        <div id="status" style="margin-top:10px; color: gray;"></div>
+    </div>
+
+    <div id="history"><h3>History</h3><div id="list">Loading...</div></div>
+
+    <script>
+        const types = [5, 4, 3, 2];
+        let counts = { 5: 0, 4: 0, 3: 0, 2: 0 };
+        
+        // Render Cards
+        const app = document.getElementById('app');
+        types.forEach(t => {
+            app.innerHTML += `
+            <div class="card c${t}">
+                <h3>${t} Chickens/Cage</h3>
+                <div class="row">
+                    <button onclick="mod(${t}, -1)">-</button>
+                    <span class="count" id="c-${t}">0</span>
+                    <button onclick="mod(${t}, 1)">+</button>
+                </div>
+                <div>= <span id="t-${t}">0</span> chickens</div>
+            </div>`;
+        });
+
+        function mod(type, val) {
+            if (counts[type] + val < 0) return;
+            counts[type] += val;
+            update();
+        }
+
+        function update() {
+            let total = 0;
+            types.forEach(t => {
+                let sub = counts[t] * t;
+                total += sub;
+                document.getElementById(`c-${t}`).innerText = counts[t];
+                document.getElementById(`t-${t}`).innerText = sub;
+            });
+            document.getElementById('grand-total').innerText = total;
+            return total;
+        }
+
+        async function saveData() {
+            const btn = document.querySelector('.save-btn');
+            const status = document.getElementById('status');
+            const total = update();
+            if(total === 0) return alert("Total is 0");
+
+            btn.disabled = true; status.innerText = "Saving...";
+            
+            try {
+                const res = await fetch('/.netlify/functions/server', {
+                    method: 'POST',
+                    body: JSON.stringify({ ...counts, total })
+                });
+                if(res.ok) {
+                    status.innerText = "Saved!";
+                    counts = { 5: 0, 4: 0, 3: 0, 2: 0 };
+                    update();
+                    loadHistory();
+                } else {
+                    status.innerText = "Error saving.";
+                }
+            } catch(e) { status.innerText = "Connection error"; }
+            btn.disabled = false;
+        }
+
+        async function loadHistory() {
+            try {
+                const res = await fetch('/.netlify/functions/server');
+                const data = await res.json();
+                document.getElementById('list').innerHTML = data.map(i => 
+                    `<div class="hist-item"><b>${i.total} 🐔</b> - ${new Date(i.created_at).toLocaleString()}</div>`
+                ).join('');
+            } catch(e) { document.getElementById('list').innerText = "Login/Network Error"; }
+        }
+        
+        loadHistory();
+    </script>
+</body>
+</html>
